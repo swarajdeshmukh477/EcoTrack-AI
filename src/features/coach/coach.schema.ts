@@ -13,8 +13,8 @@ export const coachResponseCardSchema = z.object({
 
 export const coachChatMessageSchema = z.object({
   id: z.string().min(1),
-  question: z.string().min(1),
-  answer: z.string().min(1),
+  question: z.string().min(1).max(180),
+  answer: z.string().min(1).max(2000),
   card: coachResponseCardSchema.optional(),
   sourceActivityIds: z.array(z.string()),
   createdAt: z.string().datetime(),

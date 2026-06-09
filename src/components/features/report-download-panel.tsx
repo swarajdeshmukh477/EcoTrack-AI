@@ -55,9 +55,9 @@ export function ReportDownloadPanel() {
 
       setDownloadStatus("success");
       setMessage("Report downloaded successfully");
-    } catch (error) {
+    } catch {
       setDownloadStatus("error");
-      setMessage(error instanceof Error ? `Report download failed: ${error.message}` : "Report download failed. Please try again.");
+      setMessage("Report download failed. Please try again.");
     }
   }
 

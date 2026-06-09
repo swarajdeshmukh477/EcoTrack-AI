@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { dietTypes, transportModes } from "./profile.types";
 
-const countSchema = z.number().min(0, "Enter zero or a positive number.");
+const countSchema = z.number().finite("Use a valid number.").min(0, "Enter zero or a positive number.");
 
 export const profileSchema = z.object({
   transportation: z.object({

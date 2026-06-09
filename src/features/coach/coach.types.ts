@@ -37,6 +37,7 @@ export type StructuredCoachInsight = {
 
 export type CoachConversationResponse = {
   answer: string;
+  card: CoachResponseCard;
   sourceActivityIds: string[];
 };
 
@@ -44,6 +45,14 @@ export type CoachChatMessage = {
   id: string;
   question: string;
   answer: string;
+  card?: CoachResponseCard;
   sourceActivityIds: string[];
   createdAt: string;
+};
+
+export type CoachResponseCard = {
+  analysis: string;
+  reasoning: string;
+  recommendation: string;
+  expectedImpact: string;
 };

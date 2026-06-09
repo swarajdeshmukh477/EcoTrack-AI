@@ -78,6 +78,8 @@
 
 html {
   background: var(--background);
+  color-scheme: light;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -94,6 +96,305 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+.welcome-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--background), var(--primary) 5%), var(--background)),
+    var(--background);
+}
+
+.welcome-content {
+  width: min(100%, 760px);
+  min-height: min(860px, calc(100vh - 2.5rem));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  text-align: center;
+  animation: welcome-fade 700ms ease both;
+}
+
+.welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--primary);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px color-mix(in oklch, var(--foreground), transparent 90%);
+}
+
+.welcome-copy h1 {
+  max-width: 720px;
+  font-size: clamp(2.35rem, 8vw, 5.25rem);
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.welcome-description {
+  max-width: 620px;
+  margin: 1rem auto 0;
+  color: var(--muted-foreground);
+  font-size: clamp(1rem, 2.4vw, 1.2rem);
+  line-height: 1.7;
+}
+
+.earth-scene {
+  position: relative;
+  width: min(70vw, 280px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.earth-orbit {
+  position: absolute;
+  inset: 4%;
+  border: 1px solid color-mix(in oklch, var(--primary), transparent 45%);
+  border-radius: 999px;
+  animation: earth-spin 12s linear infinite;
+}
+
+.earth {
+  position: relative;
+  width: 68%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, oklch(0.75 0.13 210), oklch(0.58 0.13 190)),
+    var(--primary);
+  box-shadow: inset -22px -18px 34px color-mix(in oklch, black, transparent 78%),
+    0 24px 50px color-mix(in oklch, var(--primary), transparent 72%);
+  animation: earth-float 5s ease-in-out infinite;
+}
+
+.earth-land,
+.earth-line,
+.earth-leaf {
+  position: absolute;
+  display: block;
+}
+
+.earth-land {
+  border-radius: 48% 52% 42% 58%;
+  background: oklch(0.62 0.16 145);
+}
+
+.earth-land-one {
+  width: 34%;
+  height: 22%;
+  left: 18%;
+  top: 24%;
+}
+
+.earth-land-two {
+  width: 42%;
+  height: 26%;
+  right: 12%;
+  top: 48%;
+}
+
+.earth-land-three {
+  width: 24%;
+  height: 18%;
+  left: 34%;
+  bottom: 12%;
+}
+
+.earth-line {
+  left: 0;
+  right: 0;
+  border-top: 1px solid color-mix(in oklch, white, transparent 55%);
+}
+
+.earth-line-one {
+  top: 38%;
+}
+
+.earth-line-two {
+  top: 62%;
+}
+
+.earth-leaf {
+  right: 9%;
+  top: 10%;
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 34px color-mix(in oklch, var(--foreground), transparent 88%);
+  animation: welcome-fade 900ms ease 250ms both;
+}
+
+.welcome-quote {
+  max-width: 640px;
+  color: var(--foreground);
+  font-size: clamp(1.05rem, 3vw, 1.5rem);
+  line-height: 1.55;
+  font-weight: 500;
+  animation: quote-fade 900ms ease both;
+}
+
+.welcome-button {
+  display: inline-flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: oklch(0.55 0.16 150);
+  color: white;
+  padding: 0 1.35rem;
+  font-weight: 700;
+  box-shadow: 0 14px 30px color-mix(in oklch, var(--primary), transparent 68%);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.welcome-button:hover {
+  transform: translateY(-2px);
+  background: oklch(0.5 0.16 150);
+  box-shadow: 0 18px 38px color-mix(in oklch, var(--primary), transparent 62%);
+}
+
+.welcome-button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.welcome-footer {
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}
+
+.loading-panel {
+  display: grid;
+  place-items: center;
+  gap: 1rem;
+  text-align: center;
+  animation: welcome-fade 500ms ease both;
+}
+
+.loading-mark {
+  display: grid;
+  width: 5rem;
+  height: 5rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  animation: earth-spin 1s linear infinite;
+}
+
+@keyframes welcome-fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes quote-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes earth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes earth-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :root,
+  :root[data-theme="dark"] {
+    --background: Canvas;
+    --foreground: CanvasText;
+    --card: Canvas;
+    --card-foreground: CanvasText;
+    --popover: Canvas;
+    --popover-foreground: CanvasText;
+    --primary: Highlight;
+    --primary-foreground: HighlightText;
+    --secondary: Canvas;
+    --secondary-foreground: CanvasText;
+    --muted: Canvas;
+    --muted-foreground: CanvasText;
+    --accent: Canvas;
+    --accent-foreground: CanvasText;
+    --destructive: Mark;
+    --destructive-foreground: CanvasText;
+    --border: CanvasText;
+    --input: CanvasText;
+    --ring: Highlight;
+  }
+
+  .welcome-button,
+  button,
+  input,
+  select,
+  textarea {
+    border: 1px solid CanvasText;
+  }
+
+  .earth,
+  .earth-land,
+  .earth-line,
+  .earth-orbit,
+  .earth-leaf {
+    forced-color-adjust: auto;
+  }
 }

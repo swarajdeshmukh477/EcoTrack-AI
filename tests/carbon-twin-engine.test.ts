@@ -75,4 +75,30 @@ describe("buildCarbonTwin", () => {
     expect(twin?.identity).toBe("Green Explorer");
     expect(twin?.strengths.some((item) => item.includes("travel habit"))).toBe(true);
   });
+
+  it("generates Climate Warrior from a strong logged score", () => {
+    const twin = buildCarbonTwin(null, [activity("a1", "transport", 1)]);
+
+    expect(twin?.identity).toBe("Climate Warrior");
+    expect(twin?.dataSource).toBe("activity_logs");
+  });
+
+  it("adds renewable electricity and recycling strengths from profile data", () => {
+    const profile: UserProfile = {
+      ...emptyProfileFormValues,
+      electricity: {
+        monthlyKwh: 80,
+        renewablePercent: 75,
+      },
+      waste: {
+        landfillKgPerWeek: 1,
+        recyclingKgPerWeek: 5,
+      },
+    };
+
+    const twin = buildCarbonTwin(profile, []);
+
+    expect(twin?.strengths).toContain("Your profile lists 75% renewable electricity.");
+    expect(twin?.strengths).toContain("Your recycling profile is stronger than your landfill waste profile.");
+  });
 });

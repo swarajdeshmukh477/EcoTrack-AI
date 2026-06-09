@@ -92,16 +92,21 @@ export function ActivityForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add activity</CardTitle>
+        <CardTitle id="activity-form-title">Add activity</CardTitle>
         <CardDescription>Choose a real activity and amount to calculate its carbon impact.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4" onSubmit={submitActivity}>
+        <form
+          aria-describedby={error ? "activity-form-error" : undefined}
+          aria-labelledby="activity-form-title"
+          className="space-y-4"
+          onSubmit={submitActivity}
+        >
           <div className="grid gap-2">
             <Label htmlFor="category">Category</Label>
             <select
               id="category"
-              className="h-10 rounded-md border bg-background px-3 text-sm"
+              className="h-10 rounded-md border bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               value={form.category}
               onChange={(event) => updateCategory(event.target.value as ActivityCategory)}
             >
@@ -117,7 +122,7 @@ export function ActivityForm() {
             <Label htmlFor="activity-type">Activity type</Label>
             <select
               id="activity-type"
-              className="h-10 rounded-md border bg-background px-3 text-sm"
+              className="h-10 rounded-md border bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               value={form.activityType}
               onChange={(event) => updateActivityType(event.target.value)}
             >
@@ -140,6 +145,7 @@ export function ActivityForm() {
                 type="number"
                 value={form.amount}
                 onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
+                aria-invalid={Boolean(error)}
               />
             </div>
             <div className="grid gap-2">
@@ -170,7 +176,7 @@ export function ActivityForm() {
           </div>
 
           {error ? (
-            <p className="text-sm text-destructive" role="alert">
+            <p className="text-sm text-destructive" id="activity-form-error" role="alert">
               {error}
             </p>
           ) : null}

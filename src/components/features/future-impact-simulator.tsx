@@ -28,8 +28,8 @@ export function FutureImpactSimulator() {
   if (!result) {
     return (
       <EmptyState
-        title="No simulation data yet"
-        description="Save profile habits or add activity logs to simulate future emissions."
+        title="Simulate future emissions from your own habits"
+        description="This tool compares your current footprint with possible lifestyle changes before you try them in real life. Complete your profile or log one activity to start the comparison."
       />
     );
   }
@@ -43,37 +43,47 @@ export function FutureImpactSimulator() {
         <Metric label="Annual savings" value={formatCarbon(result.annualSavingsKg)} />
       </div>
 
+      <div className="rounded-md border p-4" aria-labelledby="before-after-heading">
+        <h3 id="before-after-heading" className="text-sm font-semibold">
+          Before vs after visualization
+        </h3>
+        <div className="mt-4 grid gap-4">
+          <ComparisonBar label="Current footprint" value={result.currentAnnualKg} max={result.currentAnnualKg} />
+          <ComparisonBar label="Future footprint" value={result.futureAnnualKg} max={result.currentAnnualKg} />
+        </div>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
         <form className="grid gap-4 rounded-md border p-4" aria-label="Habit changes">
           <SliderField
             id="transportReductionPercent"
-            label="Reduce transport"
+            label="Transport reduction"
             register={register}
             suffix="%"
             value={adjustments.success ? adjustments.data.transportReductionPercent : 0}
           />
           <SliderField
             id="electricityReductionPercent"
-            label="Reduce electricity"
+            label="Electricity reduction"
             register={register}
             suffix="%"
             value={adjustments.success ? adjustments.data.electricityReductionPercent : 0}
           />
           <NumberField
             id="meatMealsReducedPerWeek"
-            label="Meat meals reduced per week"
+            label="Meat meals to reduce weekly"
             register={register}
           />
           <SliderField
             id="shoppingReductionPercent"
-            label="Reduce shopping"
+            label="Shopping reduction"
             register={register}
             suffix="%"
             value={adjustments.success ? adjustments.data.shoppingReductionPercent : 0}
           />
           <SliderField
             id="wasteDiversionPercent"
-            label="Divert waste"
+            label="Waste diverted from landfill"
             register={register}
             suffix="%"
             value={adjustments.success ? adjustments.data.wasteDiversionPercent : 0}
@@ -83,7 +93,7 @@ export function FutureImpactSimulator() {
         <div className="rounded-md border p-4">
           <div className="mb-3 flex items-center gap-2">
             <Calculator aria-hidden="true" className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold">Category impact</h3>
+            <h3 className="text-sm font-semibold">Category savings</h3>
           </div>
           <ul className="space-y-3" aria-label="Future impact by category">
             {result.categories.map((category) => (
@@ -101,7 +111,7 @@ export function FutureImpactSimulator() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {formatCarbon(category.currentAnnualKg)} now to {formatCarbon(category.futureAnnualKg)} future
+                  Current {formatCarbon(category.currentAnnualKg)} to future {formatCarbon(category.futureAnnualKg)}
                 </p>
               </li>
             ))}
@@ -117,6 +127,22 @@ function Metric({ label, value }: { label: string; value: string }) {
     <div className="rounded-md border p-4">
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-2 font-mono text-lg font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function ComparisonBar({ label, max, value }: { label: string; max: number; value: number }) {
+  const width = max > 0 ? Math.max(4, Math.min(100, (value / max) * 100)) : 0;
+
+  return (
+    <div className="grid gap-2">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span>{label}</span>
+        <span className="font-mono">{formatCarbon(value)}</span>
+      </div>
+      <div className="h-4 rounded-full bg-secondary" aria-hidden="true">
+        <div className="h-4 rounded-full bg-primary transition-all" style={{ width: `${width}%` }} />
+      </div>
     </div>
   );
 }
@@ -140,7 +166,15 @@ function SliderField({
     <div className="grid gap-2">
       <Label htmlFor={id}>{label}</Label>
       <div className="grid grid-cols-[1fr_76px] items-center gap-3">
-        <Input id={id} max="100" min="0" step="1" type="range" {...register(id, { valueAsNumber: true })} />
+        <Input
+          id={id}
+          max="100"
+          min="0"
+          step="1"
+          type="range"
+          aria-valuetext={`${value}${suffix}`}
+          {...register(id, { valueAsNumber: true })}
+        />
         <output className="font-mono text-sm" htmlFor={id}>
           {value}
           {suffix}

@@ -40,14 +40,14 @@ export function CarbonSummary() {
   const scoreItems = [
     {
       label: "Carbon score",
-      value: result.score ? `${result.score.value}/100` : "No score yet",
-      description: "Generated after activity logs exist.",
+      value: result.score ? `${result.score.value}/100` : "Not calculated yet",
+      description: "Log one real activity to generate your first score.",
       icon: Gauge,
     },
     {
       label: "Sustainability rating",
-      value: result.score ? formatSustainabilityRating(result.score.rating) : "No rating yet",
-      description: result.score ? `${formatCarbon(result.score.annualizedKg)} annualized from logs.` : "No fake rating for new users.",
+      value: result.score ? formatSustainabilityRating(result.score.rating) : "Not rated yet",
+      description: result.score ? `${formatCarbon(result.score.annualizedKg)} annualized from logs.` : "Ratings explain your footprint after emissions are logged.",
       icon: ListTree,
     },
   ];
@@ -74,7 +74,10 @@ export function CarbonSummary() {
           </CardHeader>
           <CardContent>
             {result.categoryBreakdown.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No categories yet.</p>
+              <p className="text-sm text-muted-foreground">
+                Category breakdowns show which lifestyle area contributes most. Log an activity to start comparing
+                transportation, electricity, food, shopping, and waste.
+              </p>
             ) : (
               <ul className="space-y-2" aria-label="Carbon emissions by category">
                 {result.categoryBreakdown.map((item) => (

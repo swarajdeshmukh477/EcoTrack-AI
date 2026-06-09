@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getProgressSummary } from "@/features/progress/progress-calculator";
+import { buildProgressReport, getProgressSummary, summarizeProgress } from "@/features/progress/progress-calculator";
 import type { Activity } from "@/features/activities/activity.types";
 
 function activity(id: string, date: string, co2eKg: number): Activity {
@@ -31,6 +31,40 @@ describe("getProgressSummary", () => {
       currentMonthKg: 8,
       previousMonthKg: 10,
       changePercent: -20,
+    });
+  });
+});
+
+describe("buildProgressReport", () => {
+  it("tracks daily, weekly, and monthly emissions from activity history", () => {
+    const report = buildProgressReport([
+      activity("a1", "2026-06-08", 10),
+      activity("a2", "2026-06-09", 5),
+      activity("a3", "2026-06-15", 4),
+    ]);
+
+    expect(report.daily).toEqual([
+      { period: "2026-06-08", co2eKg: 10 },
+      { period: "2026-06-09", co2eKg: 5 },
+      { period: "2026-06-15", co2eKg: 4 },
+    ]);
+    expect(report.weekly).toEqual([
+      { period: "2026-W24", co2eKg: 15 },
+      { period: "2026-W25", co2eKg: 4 },
+    ]);
+    expect(report.monthly).toEqual([{ period: "2026-06", co2eKg: 19 }]);
+  });
+
+  it("calculates positive improvement when emissions decrease", () => {
+    expect(
+      summarizeProgress([
+        { period: "2026-W24", co2eKg: 10 },
+        { period: "2026-W25", co2eKg: 7 },
+      ]),
+    ).toEqual({
+      currentKg: 7,
+      previousKg: 10,
+      improvementPercent: 30,
     });
   });
 });

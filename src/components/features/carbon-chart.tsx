@@ -31,8 +31,8 @@ export function CarbonChart() {
   if (activities.length === 0) {
     return (
       <EmptyState
-        title="No chart data"
-        description="Activity emission bars will appear after you add dated activity logs."
+        title="Visualize emissions from logged activities"
+        description="This chart compares activity emissions so you can spot the entries with the largest impact. Log a dated activity to start building the visualization."
       />
     );
   }

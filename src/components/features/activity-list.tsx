@@ -15,11 +15,14 @@ export function ActivityList() {
     <Card>
       <CardHeader>
         <CardTitle>Recent logs</CardTitle>
-        <CardDescription>Your entries stay empty until you add activities.</CardDescription>
+        <CardDescription>Activity logs create the history used for scores, charts, and coaching.</CardDescription>
       </CardHeader>
       <CardContent>
         {activities.length === 0 ? (
-          <EmptyState title="No activities yet" description="Add your first activity to unlock summaries, charts, and coach insights." />
+          <EmptyState
+            title="Build your activity history"
+            description="Activity history records dated lifestyle choices and their carbon impact. Log one activity to unlock summaries, charts, and coach insights."
+          />
         ) : (
           <ul className="space-y-3" aria-label="Logged activities">
             {activities.map((activity) => {

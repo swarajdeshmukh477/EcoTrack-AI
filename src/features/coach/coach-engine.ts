@@ -1,12 +1,18 @@
 import type { Activity, ActivityCategory } from "@/features/activities/activity.types";
+import { buildSimpleActions } from "@/features/actions/actions-engine";
 import { carbonFactors } from "@/features/carbon/carbon-factors";
 import { buildCarbonEngineResult, formatSustainabilityRating } from "@/features/carbon/carbon-engine";
 import { roundCarbon } from "@/features/carbon/carbon-calculator";
+import { defaultHabitAdjustments } from "@/features/simulator/simulator.schema";
+import { simulateFutureImpact } from "@/features/simulator/future-impact-engine";
+import { buildCarbonTwin } from "@/features/twin/carbon-twin-engine";
+import type { UserProfile } from "@/features/profile/profile.types";
 import { formatCarbon } from "@/lib/format";
 import type {
   CoachAction,
   CoachConversationResponse,
   CoachRecommendation,
+  CoachResponseCard,
   StructuredCoachInsight,
 } from "./coach.types";
 
@@ -38,7 +44,7 @@ export function buildStructuredCoachInsight(activities: Activity[]): StructuredC
     ? `Your score is ${carbon.score.value}/100, rated ${formatSustainabilityRating(
         carbon.score.rating,
       ).toLowerCase()}, because your logged activities annualize to ${formatCarbon(carbon.score.annualizedKg)}.`
-    : "Your score will appear after you add at least one activity.";
+    : "Your score is not calculated yet because no activity emissions have been logged.";
 
   return {
     highestSource: {
@@ -76,7 +82,11 @@ export function buildCoachRecommendations(activities: Activity[]): CoachRecommen
   }));
 }
 
-export function answerCoachQuestion(activities: Activity[], question: string): CoachConversationResponse | null {
+export function answerCoachQuestion(
+  activities: Activity[],
+  question: string,
+  profile: UserProfile | null = null,
+): CoachConversationResponse | null {
   const activityStatementResponse = answerActivityStatement(question);
 
   if (activityStatementResponse) {
@@ -84,51 +94,90 @@ export function answerCoachQuestion(activities: Activity[], question: string): C
   }
 
   const insight = buildStructuredCoachInsight(activities);
+  const fallback = buildFallbackContext(profile, activities);
 
-  if (!insight) {
+  if (!insight && !fallback) {
     return null;
   }
 
   const normalized = question.toLowerCase();
-  const sourceIds = uniqueIds(insight.improvements.flatMap((item) => item.sourceActivityIds));
+  const sourceIds = insight ? uniqueIds(insight.improvements.flatMap((item) => item.sourceActivityIds)) : [];
 
   if (containsAny(normalized, ["why", "high", "footprint"])) {
-    return {
-      answer: insight.reason,
-      sourceActivityIds: sourceIds,
-    };
+    const card = insight
+      ? makeCard({
+          analysis: insight.reason,
+          reasoning: "The coach compares your category breakdown and finds the largest measured source.",
+          recommendation: insight.improvements[0]?.title ?? "Add more activity data.",
+          expectedImpact: insight.improvements[0] ? formatCarbon(insight.improvements[0].estimatedImpactKg) : "Needs more data.",
+        })
+      : fallback!.card;
+    return responseFromCard(card, sourceIds);
   }
 
   if (containsAny(normalized, ["improve", "first", "priority", "focus"])) {
-    const firstAction = insight.improvements[0];
-    return {
-      answer: firstAction
-        ? `Start with ${firstAction.title.toLowerCase()}. ${firstAction.detail} Estimated impact: ${formatCarbon(
-            firstAction.estimatedImpactKg,
-          )}.`
-        : insight.reason,
-      sourceActivityIds: firstAction ? uniqueIds(firstAction.sourceActivityIds) : sourceIds,
-    };
+    const firstAction = insight?.improvements[0] ?? fallback?.firstAction;
+    const card = makeCard({
+      analysis: insight?.reason ?? fallback?.analysis ?? "Your saved data points to a first priority.",
+      reasoning: getActionReason(firstAction) ?? fallback?.reasoning ?? "The action is selected from your highest source.",
+      recommendation: firstAction?.title ?? "Add more activity data.",
+      expectedImpact: firstAction ? formatCarbon(firstAction.estimatedImpactKg) : fallback?.impact ?? "Needs more data.",
+    });
+    return responseFromCard(card, firstAction ? uniqueIds(getActionSourceIds(firstAction)) : sourceIds);
   }
 
   if (containsAny(normalized, ["score", "rating", "simple", "explain"])) {
-    return {
-      answer: insight.scoreExplanation,
-      sourceActivityIds: sourceIds,
-    };
+    const card = makeCard({
+      analysis: insight?.scoreExplanation ?? "Your carbon score needs activity logs to be calculated.",
+      reasoning: "EcoTrack scores are based on measured activity emissions, not profile guesses.",
+      recommendation: insight ? "Use your highest-source recommendation first." : "Add one dated activity log to unlock your score.",
+      expectedImpact: insight?.improvements[0] ? formatCarbon(insight.improvements[0].estimatedImpactKg) : "Score unlocks after logs.",
+    });
+    return responseFromCard(card, sourceIds);
   }
 
   if (containsAny(normalized, ["plan", "week", "weekly"])) {
-    return {
-      answer: insight.weeklyPlan.map((item) => `${item.day}: ${item.task} ${item.reason}`).join("\n"),
-      sourceActivityIds: sourceIds,
-    };
+    const plan = insight?.weeklyPlan ?? fallback?.weeklyPlan ?? [];
+    const card = makeCard({
+      analysis: plan.length ? "Your weekly plan targets your highest source." : "A plan needs profile or activity data.",
+      reasoning: "Each day focuses on one small action so the plan stays practical.",
+      recommendation: plan.map((item) => `${item.day}: ${item.task}`).join(" "),
+      expectedImpact: fallback?.impact ?? (insight?.improvements[0] ? formatCarbon(insight.improvements[0].estimatedImpactKg) : "Needs more data."),
+    });
+    return responseFromCard(card, sourceIds);
   }
 
-  return {
-    answer: `${insight.reason}\n\nBest first action: ${insight.improvements[0]?.title ?? "Add more activity data"}.`,
-    sourceActivityIds: sourceIds,
-  };
+  if (containsAny(normalized, ["ac", "electricity", "appliance", "energy"])) {
+    const impact = fallback?.impactResult?.categories.find((item) => item.category === "home");
+    const card = makeCard({
+      analysis: impact ? `Home energy is currently ${formatCarbon(impact.currentAnnualKg)} annually.` : "Home energy impact needs electricity data.",
+      reasoning: "Reducing AC or idle appliance use lowers the home-energy part of your footprint.",
+      recommendation: "Reduce AC or heavy appliance usage by 1 hour daily.",
+      expectedImpact: impact ? `${formatCarbon(impact.annualSavingsKg)} annual savings in the simulator.` : "Save electricity data to estimate impact.",
+    });
+    return responseFromCard(card, sourceIds);
+  }
+
+  if (containsAny(normalized, ["earth guardian", "guardian", "warrior", "climate"])) {
+    const twin = fallback?.twin;
+    const card = makeCard({
+      analysis: twin ? `Your current carbon twin is ${twin.identity}.` : "Your carbon twin needs profile or activity data.",
+      reasoning: twin ? twin.weaknesses[0] ?? twin.profile : "EcoTrack needs your pattern before setting an identity path.",
+      recommendation: twin?.opportunities[0] ?? "Save profile data and log one activity.",
+      expectedImpact: fallback?.impact ?? "Impact appears after enough data is available.",
+    });
+    return responseFromCard(card, sourceIds);
+  }
+
+  const card = insight
+    ? makeCard({
+        analysis: insight.reason,
+        reasoning: insight.scoreExplanation,
+        recommendation: insight.improvements[0]?.title ?? "Add more activity data.",
+        expectedImpact: insight.improvements[0] ? formatCarbon(insight.improvements[0].estimatedImpactKg) : "Needs more data.",
+      })
+    : fallback!.card;
+  return responseFromCard(card, sourceIds);
 }
 
 function answerActivityStatement(question: string): CoachConversationResponse | null {
@@ -152,10 +201,49 @@ function answerActivityStatement(question: string): CoachConversationResponse | 
   const qualifier = isUpperBound ? "at most " : "";
 
   return {
-    answer: `That sounds like a car travel activity. If you log it as ${qualifier}${distanceKm} km of car travel, it would add about ${formatCarbon(
-      estimatedKg,
-    )} or less to your footprint. I have not counted it in your charts yet because chat messages do not create activity logs; add it in the activity form to include it in your history and score.`,
+    answer: `Analysis: car travel statement. Reasoning: ${qualifier}${distanceKm} km uses the car travel factor. Recommendation: I have not counted it automatically; log it in the activity form if you want it counted. Expected Impact: about ${formatCarbon(estimatedKg)} or less.`,
+    card: makeCard({
+      analysis: "That sounds like a car travel activity.",
+      reasoning: `${qualifier}${distanceKm} km uses the car travel emissions factor.`,
+      recommendation: "I have not counted it automatically; log it in the activity form if you want it counted in charts and score.",
+      expectedImpact: `About ${formatCarbon(estimatedKg)} or less.`,
+    }),
     sourceActivityIds: [],
+  };
+}
+
+function buildFallbackContext(profile: UserProfile | null, activities: Activity[]) {
+  const actions = buildSimpleActions(profile, activities);
+  const firstAction = actions.actions[0];
+  const twin = buildCarbonTwin(profile, activities);
+  const impactResult = simulateFutureImpact(profile, activities, defaultHabitAdjustments);
+
+  if (!actions.highestSource && !twin && !impactResult) {
+    return null;
+  }
+
+  const category = actions.highestSource?.category ?? twin?.dominantCategory ?? "transport";
+  const analysis = actions.highestSource
+    ? `${capitalize(categoryLabels[category])} is currently the strongest signal from your ${actions.highestSource.source === "profile" ? "profile" : "logs"}.`
+    : twin?.profile ?? "Your profile has enough data for coaching.";
+  const reasoning = firstAction?.reason ?? twin?.weaknesses[0] ?? "The recommendation is based on your strongest available source.";
+  const impact = impactResult ? `${impactResult.reductionPercent.toFixed(1)}% potential annual reduction` : "Save more data to estimate impact.";
+  const card = makeCard({
+    analysis,
+    reasoning,
+    recommendation: firstAction?.title ?? twin?.opportunities[0] ?? "Add one activity log.",
+    expectedImpact: firstAction ? formatCarbon(firstAction.estimatedImpactKg) : impact,
+  });
+
+  return {
+    analysis,
+    reasoning,
+    impact,
+    card,
+    firstAction,
+    weeklyPlan: buildWeeklyPlan(category, actions.highestSource?.co2eKg ?? 0),
+    impactResult,
+    twin,
   };
 }
 
@@ -297,6 +385,30 @@ function containsAny(value: string, words: string[]) {
 
 function uniqueIds(ids: string[]) {
   return Array.from(new Set(ids));
+}
+
+function makeCard(card: CoachResponseCard) {
+  return card;
+}
+
+function responseFromCard(card: CoachResponseCard, sourceActivityIds: string[]): CoachConversationResponse {
+  return {
+    answer: `Analysis: ${card.analysis}\nReasoning: ${card.reasoning}\nRecommendation: ${card.recommendation}\nExpected Impact: ${card.expectedImpact}`,
+    card,
+    sourceActivityIds,
+  };
+}
+
+function getActionReason(action: CoachAction | ReturnType<typeof buildSimpleActions>["actions"][number] | undefined) {
+  if (!action) {
+    return null;
+  }
+
+  return "detail" in action ? action.detail : action.reason;
+}
+
+function getActionSourceIds(action: CoachAction | ReturnType<typeof buildSimpleActions>["actions"][number]) {
+  return "sourceActivityIds" in action ? action.sourceActivityIds : [];
 }
 
 function capitalize(value: string) {

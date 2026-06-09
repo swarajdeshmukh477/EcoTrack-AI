@@ -12,21 +12,22 @@ describe("CoachPanel", () => {
   it("answers a typed driving statement and allows deleting it from chat", () => {
     render(React.createElement(EcoTrackProvider, null, React.createElement(CoachPanel)));
 
-    fireEvent.click(screen.getByRole("tab", { name: "Conversational" }));
-    fireEvent.change(screen.getByLabelText("Ask about your footprint"), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Ask your coach" }), {
       target: { value: "I drove less than 1 km" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Ask coach" }));
 
-    expect(screen.getByText(/car travel/i)).toBeInTheDocument();
+    expect(screen.getByText("Analysis")).toBeInTheDocument();
+    expect(screen.getByText("Reasoning")).toBeInTheDocument();
+    expect(screen.getByText("Recommendation")).toBeInTheDocument();
+    expect(screen.getByText("Expected Impact")).toBeInTheDocument();
+    expect(screen.getAllByText(/car travel/i).length).toBeGreaterThan(1);
     fireEvent.click(screen.getByRole("button", { name: "Delete chat message" }));
     expect(screen.queryByText(/car travel/i)).not.toBeInTheDocument();
   });
 
-  it("has a history toggle in conversational mode", () => {
+  it("has a history toggle in the advisor chat", () => {
     render(React.createElement(EcoTrackProvider, null, React.createElement(CoachPanel)));
-
-    fireEvent.click(screen.getByRole("tab", { name: "Conversational" }));
 
     expect(screen.getByRole("button", { name: "Hide history" })).toBeInTheDocument();
   });

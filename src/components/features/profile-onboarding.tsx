@@ -43,7 +43,7 @@ export function ProfileOnboarding() {
       <CardHeader>
         <CardTitle>{profile ? "Update profile" : "Start with your profile"}</CardTitle>
         <CardDescription>
-          Save baseline habits for personalization. These answers do not create activity logs.
+          Save your usual habits for personalization. This does not add emissions to your activity history.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -51,7 +51,7 @@ export function ProfileOnboarding() {
           <ProfileSection title="Transportation">
             <SelectField
               id="transportation.primaryMode"
-              label="Primary travel mode"
+              label="Primary transportation mode"
               options={transportModes.map((mode) => ({ label: transportModeLabel(mode), value: mode }))}
               register={register}
             />
@@ -64,7 +64,7 @@ export function ProfileOnboarding() {
             />
             <NumberField
               id="transportation.sharedTripsPerWeek"
-              label="Shared trips per week"
+              label="Shared or public transport trips per week"
               register={register}
               error={errors.transportation?.sharedTripsPerWeek}
             />
@@ -80,7 +80,7 @@ export function ProfileOnboarding() {
             />
             <NumberField
               id="electricity.renewablePercent"
-              label="Renewable electricity"
+              label="Renewable electricity share"
               suffix="%"
               register={register}
               error={errors.electricity?.renewablePercent}
@@ -105,7 +105,7 @@ export function ProfileOnboarding() {
           <ProfileSection title="Shopping">
             <NumberField
               id="shopping.clothingItemsPerMonth"
-              label="Clothing items per month"
+              label="Clothing purchases per month"
               register={register}
               error={errors.shopping?.clothingItemsPerMonth}
             />
@@ -211,7 +211,11 @@ function SelectField({ id, label, options, register }: SelectFieldProps) {
   return (
     <div className="grid gap-2">
       <Label htmlFor={id}>{label}</Label>
-      <select id={id} className="h-10 rounded-md border bg-background px-3 text-sm" {...register(id)}>
+      <select
+        id={id}
+        className="h-10 rounded-md border bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        {...register(id)}
+      >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -230,8 +234,8 @@ function ProfileSummary({
   onEdit: () => void;
 }) {
   const items = [
-    ["Travel", `${transportModeLabel(profile.transportation.primaryMode)}, ${profile.transportation.weeklyDistanceKm} km/week`],
-    ["Electricity", `${profile.electricity.monthlyKwh} kWh/month, ${profile.electricity.renewablePercent}% renewable`],
+    ["Transportation", `${transportModeLabel(profile.transportation.primaryMode)}, ${profile.transportation.weeklyDistanceKm} km/week, ${profile.transportation.sharedTripsPerWeek} shared trips/week`],
+    ["Electricity", `${profile.electricity.monthlyKwh} kWh/month AC and appliances, ${profile.electricity.renewablePercent}% renewable`],
     ["Food", `${dietTypeLabel(profile.food.dietType)}, ${profile.food.meatMealsPerWeek} meat meals/week`],
     ["Shopping", `${profile.shopping.clothingItemsPerMonth} clothing/month, ${profile.shopping.electronicsItemsPerYear} electronics/year`],
     ["Waste", `${profile.waste.landfillKgPerWeek} kg landfill/week, ${profile.waste.recyclingKgPerWeek} kg recycled/week`],
@@ -245,7 +249,7 @@ function ProfileSummary({
             <Badge>Profile saved</Badge>
           </div>
           <CardTitle>Your profile</CardTitle>
-          <CardDescription>Used for personalization only after you provide it.</CardDescription>
+          <CardDescription>Used to personalize recommendations and simulations.</CardDescription>
         </div>
         <Button aria-label="Edit profile" size="icon" type="button" variant="ghost" onClick={onEdit}>
           <Pencil aria-hidden="true" className="h-4 w-4" />
@@ -279,7 +283,7 @@ function transportModeLabel(mode: (typeof transportModes)[number]) {
 
 function dietTypeLabel(diet: (typeof dietTypes)[number]) {
   const labels: Record<(typeof dietTypes)[number], string> = {
-    omnivore: "Omnivore",
+    omnivore: "Mixed / Non-vegetarian",
     pescatarian: "Pescatarian",
     vegetarian: "Vegetarian",
     vegan: "Vegan",

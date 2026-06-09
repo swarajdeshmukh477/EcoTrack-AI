@@ -17,7 +17,7 @@ describe("ProfileOnboarding", () => {
     expect(screen.getByRole("group", { name: "Food" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Shopping" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Waste" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Primary travel mode")).toBeInTheDocument();
+    expect(screen.getByLabelText("Primary transportation mode")).toBeInTheDocument();
     expect(screen.getByLabelText("Monthly electricity use")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /save profile/i })).toBeInTheDocument();
   });

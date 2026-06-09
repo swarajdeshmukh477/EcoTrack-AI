@@ -12,8 +12,8 @@ export function CarbonTwinPanel() {
   if (!twin) {
     return (
       <EmptyState
-        title="No carbon twin yet"
-        description="Save a profile or add activity logs to generate your carbon twin from real data."
+        title="Your Carbon Twin needs lifestyle data"
+        description="The Carbon Twin summarizes your sustainability profile, strengths, weaknesses, and improvement opportunities. Complete your profile or log one activity to generate it from your own data."
       />
     );
   }

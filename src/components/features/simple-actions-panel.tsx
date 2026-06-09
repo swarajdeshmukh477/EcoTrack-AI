@@ -14,8 +14,8 @@ export function SimpleActionsPanel() {
   if (result.actions.length === 0) {
     return (
       <EmptyState
-        title="No actions yet"
-        description="Save a profile or add activity logs to generate practical actions from your own data."
+        title="Action ideas will be personalized"
+        description="Simple actions focus on your largest emission source so changes stay practical. Complete your profile or log one activity to generate actions from your own habits."
       />
     );
   }

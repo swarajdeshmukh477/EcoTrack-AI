@@ -31,6 +31,7 @@ type EcoTrackAction =
   | { type: "coach/history/delete"; payload: string }
   | { type: "coach/history/clear" }
   | { type: "theme/toggle" }
+  | { type: "state/reset" }
   | { type: "state/load"; payload: EcoTrackState };
 
 type EcoTrackContextValue = EcoTrackState & {
@@ -41,6 +42,7 @@ type EcoTrackContextValue = EcoTrackState & {
   deleteCoachMessage: (id: string) => void;
   clearCoachHistory: () => void;
   toggleTheme: () => void;
+  resetData: () => void;
 };
 
 const initialState: EcoTrackState = {
@@ -105,6 +107,11 @@ function reducer(state: EcoTrackState, action: EcoTrackAction): EcoTrackState {
         ...state,
         theme: state.theme === "dark" ? "light" : "dark",
       };
+    case "state/reset":
+      return {
+        ...initialState,
+        theme: state.theme,
+      };
     case "state/load":
       return action.payload;
     default:
@@ -146,6 +153,7 @@ export function EcoTrackProvider({ children }: { children: React.ReactNode }) {
       deleteCoachMessage: (id) => dispatch({ type: "coach/history/delete", payload: id }),
       clearCoachHistory: () => dispatch({ type: "coach/history/clear" }),
       toggleTheme: () => dispatch({ type: "theme/toggle" }),
+      resetData: () => dispatch({ type: "state/reset" }),
     }),
     [state],
   );

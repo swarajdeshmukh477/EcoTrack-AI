@@ -67,4 +67,80 @@ describe("buildSimpleActions", () => {
     });
     expect(result.actions.map((action) => action.title)).toContain("Walk for trips under 2 km");
   });
+
+  it.each([
+    [
+      "home",
+      {
+        electricity: {
+          monthlyKwh: 200,
+          renewablePercent: 0,
+        },
+      },
+      "Reduce AC usage by 1 hour",
+    ],
+    [
+      "shopping",
+      {
+        shopping: {
+          clothingItemsPerMonth: 4,
+          electronicsItemsPerYear: 1,
+        },
+      },
+      "Delay one non-essential purchase",
+    ],
+    [
+      "waste",
+      {
+        waste: {
+          landfillKgPerWeek: 12,
+          recyclingKgPerWeek: 1,
+        },
+      },
+      "Recycle household waste",
+    ],
+  ] as const)("generates %s actions from profile-specific data", (category, patch, expectedTitle) => {
+    const profile = {
+      ...emptyProfileFormValues,
+      ...patch,
+    } as UserProfile;
+    const result = buildSimpleActions(profile, []);
+
+    expect(result.highestSource?.category).toBe(category);
+    expect(result.actions[0]?.title).toBe(expectedTitle);
+    expect(result.actions.every((action) => action.estimatedImpactKg > 0)).toBe(true);
+  });
+
+  it("uses lower-emission transport copy for non-car profiles", () => {
+    const profile: UserProfile = {
+      ...emptyProfileFormValues,
+      transportation: {
+        primaryMode: "bus",
+        weeklyDistanceKm: 40,
+        sharedTripsPerWeek: 4,
+      },
+    };
+
+    const result = buildSimpleActions(profile, []);
+
+    expect(result.actions[0]?.description).toContain("lower-emission travel mode");
+  });
+
+  it("generates transport actions from logs when no profile is saved", () => {
+    const result = buildSimpleActions(null, [activity("a1", "transport", 20)]);
+
+    expect(result.highestSource?.source).toBe("activity_logs");
+    expect(result.actions[0]?.description).toContain("lower-emission travel mode");
+    expect(result.actions[1]?.estimatedImpactKg).toBe(0.384);
+  });
+
+  it.each([
+    ["shopping", "Delay one non-essential purchase"],
+    ["waste", "Recycle household waste"],
+  ] as const)("generates %s actions from logs without profile-only details", (category, expectedTitle) => {
+    const result = buildSimpleActions(null, [activity("a1", category, 10)]);
+
+    expect(result.actions[0]?.title).toBe(expectedTitle);
+    expect(result.actions[0]?.reason).not.toContain("Your profile lists");
+  });
 });

@@ -9,9 +9,12 @@ type PdfLine = {
   bold?: boolean;
 };
 
-const margin = 16;
-const pageWidth = 210;
-const pageHeight = 297;
+const PDF_MARGIN_MM = 16;
+const PDF_PAGE_WIDTH_MM = 210;
+const PDF_PAGE_HEIGHT_MM = 297;
+const EMPTY_LINE_SPACING_MM = 4;
+const MIN_LINE_HEIGHT_MM = 5;
+const FONT_SIZE_TO_LINE_HEIGHT_RATIO = 0.42;
 
 export function createReportPdfBlob(report: CarbonReport) {
   return createReportPdfDocument(report).output("blob");
@@ -91,12 +94,12 @@ function buildReportLines(report: CarbonReport): PdfLine[] {
 }
 
 function renderLines(document: jsPDF, lines: PdfLine[]) {
-  let y = margin;
-  const contentWidth = pageWidth - margin * 2;
+  let y = PDF_MARGIN_MM;
+  const contentWidth = PDF_PAGE_WIDTH_MM - PDF_MARGIN_MM * 2;
 
   for (const line of lines) {
     if (!line.text) {
-      y += 4;
+      y += EMPTY_LINE_SPACING_MM;
       continue;
     }
 
@@ -104,15 +107,15 @@ function renderLines(document: jsPDF, lines: PdfLine[]) {
     document.setFontSize(line.size);
 
     const wrappedLines = document.splitTextToSize(line.text, contentWidth) as string[];
-    const lineHeight = Math.max(5, line.size * 0.42);
+    const lineHeight = Math.max(MIN_LINE_HEIGHT_MM, line.size * FONT_SIZE_TO_LINE_HEIGHT_RATIO);
 
     for (const wrappedLine of wrappedLines) {
-      if (y > pageHeight - margin) {
+      if (y > PDF_PAGE_HEIGHT_MM - PDF_MARGIN_MM) {
         document.addPage();
-        y = margin;
+        y = PDF_MARGIN_MM;
       }
 
-      document.text(wrappedLine, margin, y);
+      document.text(wrappedLine, PDF_MARGIN_MM, y);
       y += lineHeight;
     }
   }

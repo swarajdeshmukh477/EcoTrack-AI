@@ -81,7 +81,7 @@ export function ProgressPanel() {
             id={`progress-tab-${item}`}
             aria-controls="progress-period-panel"
             aria-selected={period === item}
-            className="rounded px-3 py-2 text-sm aria-selected:bg-primary aria-selected:text-primary-foreground"
+            className="rounded px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-selected:bg-primary aria-selected:text-primary-foreground"
             role="tab"
             tabIndex={period === item ? 0 : -1}
             type="button"
@@ -112,38 +112,38 @@ export function ProgressPanel() {
         </dl>
 
         <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-        <div>
-          <h3 className="mb-2 text-sm font-semibold">{periodLabels[period]} trend</h3>
-          <p className="sr-only">
-            {periodLabels[period]} progress trend with {points.length} point{points.length === 1 ? "" : "s"}.
-          </p>
-          <div className="h-72 w-full" aria-hidden="true">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={points} margin={{ bottom: 8, left: 0, right: 16, top: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="period" tickLine={false} />
-                <YAxis tickLine={false} width={44} />
-                <Tooltip formatter={(value) => formatCarbon(Number(value))} />
-                <Line dataKey="co2eKg" dot stroke="var(--primary)" strokeWidth={2} type="monotone" />
-              </LineChart>
-            </ResponsiveContainer>
+          <div>
+            <h3 className="mb-2 text-sm font-semibold">{periodLabels[period]} trend</h3>
+            <p className="sr-only">
+              {periodLabels[period]} progress trend with {points.length} point{points.length === 1 ? "" : "s"}.
+            </p>
+            <div className="h-72 w-full" aria-hidden="true">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={points} margin={{ bottom: 8, left: 0, right: 16, top: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="period" tickLine={false} />
+                  <YAxis tickLine={false} width={44} />
+                  <Tooltip formatter={(value) => formatCarbon(Number(value))} />
+                  <Line dataKey="co2eKg" dot stroke="var(--primary)" strokeWidth={2} type="monotone" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h3 className="mb-2 text-sm font-semibold">Emissions by period</h3>
-          <div className="h-72 w-full" aria-hidden="true">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={points} margin={{ bottom: 8, left: 0, right: 16, top: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="period" tickLine={false} />
-                <YAxis tickLine={false} width={44} />
-                <Tooltip formatter={(value) => formatCarbon(Number(value))} />
-                <Bar dataKey="co2eKg" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div>
+            <h3 className="mb-2 text-sm font-semibold">Emissions by period</h3>
+            <div className="h-72 w-full" aria-hidden="true">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={points} margin={{ bottom: 8, left: 0, right: 16, top: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="period" tickLine={false} />
+                  <YAxis tickLine={false} width={44} />
+                  <Tooltip formatter={(value) => formatCarbon(Number(value))} />
+                  <Bar dataKey="co2eKg" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
         </div>
 
         <div className="overflow-x-auto rounded-md border">

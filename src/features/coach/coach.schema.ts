@@ -5,18 +5,18 @@ export const coachQuestionSchema = z.object({
 });
 
 export const coachResponseCardSchema = z.object({
-  analysis: z.string().min(1),
-  reasoning: z.string().min(1),
-  recommendation: z.string().min(1),
-  expectedImpact: z.string().min(1),
+  analysis: z.string().min(1).max(1000),
+  reasoning: z.string().min(1).max(1000),
+  recommendation: z.string().min(1).max(1000),
+  expectedImpact: z.string().min(1).max(1000),
 });
 
 export const coachChatMessageSchema = z.object({
-  id: z.string().min(1),
+  id: z.string().min(1).max(120),
   question: z.string().min(1).max(180),
   answer: z.string().min(1).max(2000),
   card: coachResponseCardSchema.optional(),
-  sourceActivityIds: z.array(z.string()),
+  sourceActivityIds: z.array(z.string().min(1).max(120)).max(500),
   createdAt: z.string().datetime(),
 });
 

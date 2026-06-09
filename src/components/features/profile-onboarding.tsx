@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Pencil } from "lucide-react";
-import { useForm, type FieldError, type FieldErrors, type Path, type UseFormRegister } from "react-hook-form";
+import { useForm, type FieldError, type Path, type UseFormRegister } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

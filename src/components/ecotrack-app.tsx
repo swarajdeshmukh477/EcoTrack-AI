@@ -586,7 +586,7 @@ function BottomNavigation({
             key={tab.id}
             aria-label={`Open ${tab.label} tab`}
             aria-current={activeTab === tab.id ? "page" : undefined}
-            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-md px-1 text-xs text-muted-foreground transition-colors hover:bg-secondary aria-current:bg-primary aria-current:text-primary-foreground"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-md px-1 text-xs text-muted-foreground transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-current:bg-primary aria-current:text-primary-foreground"
             type="button"
             onClick={() => onChange(tab.id)}
           >
